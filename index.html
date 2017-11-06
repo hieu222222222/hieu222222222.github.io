@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+ <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+
+  <title>Instagram Location Search</title>
+<style>
+body{
+  padding:100px;
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <a class="navbar-brand" href="index.html">InstaMap</a>
+  <ul class="nav navbar-nav">
+    <li >
+      <a href="index.html">Home</a>
+    </li>
+   
+  </ul>
+</nav>
+
+  <div class="container">
+    <div class="col-md-10">
+    <form id="locationsearch">
+    <p>
+        <legend>Location </legend>
+        
+        <form action="" method="POST" class="form-inline" role="form">
+        
+          <div class="form-group">
+           
+            <input type="text" class="form-control" placeholder="Nhập Địa Điểm"id="locate" name="locate">
+          </div>
+          <button type="submit" class="btn btn-primary"value="Search" id="search">Search</button>
+        </form>
+    </p>
+</form>
+  <legend>Result </legend>
+<div id="result"></div>
+</div>
+</div>
+<script>
+
+
+
+  var getform = document.getElementById('locationsearch');
+    getform.addEventListener('submit', geocode);
+
+    function geocode(e){
+      e.preventDefault();
+
+      var location = document.getElementById('locate').value;
+
+      axios.get('https://maps.googleapis.com/maps/api/geocode/json',{
+        params:{
+          address:location,
+          key:'AIzaSyAY-jldbvMa95WvmRGNzxrMimKpe9gJfLs'
+        }
+      })
+      .then(function(response){
+
+        console.log(response);
+
+
+        var lat = response.data.results[0].geometry.location.lat;
+        var lng = response.data.results[0].geometry.location.lng;
+       GetLocationId(lat,lng,access_parameters);
+
+      })
+      .catch(function(error){
+        console.log(error);
+      });
+    }
+
+
+
+
+  var access_token = "2227603577.e029fea.5b6cd53f182f48d7b756a62955501c0e",
+    access_parameters = {
+        access_token: access_token
+    };
+
+
+function GetLocationId(lat, lng, access_parameters) {
+    var instagramUrl = 'https://api.instagram.com/v1/locations/search?lat='+lat+'&lng='+lng+'&callback=?';
+    $.getJSON(instagramUrl, access_parameters, onDataLoaded);
+}
+
+function Getmedia(id,count, access_parameters) {
+    var instagramUrl2 = 'https://api.instagram.com/v1/locations/'+id+'/media/recent?&callback=?&count='+count;
+    $.getJSON(instagramUrl2, access_parameters, onDataLoaded2);
+}
+
+function onDataLoaded(instagram_data) {
+    var target = $("#result");
+
+    if (instagram_data.meta.code == 200) {
+        var adress = instagram_data.data;
+        console.log(adress);
+        if (adress.length > 0) {
+            target.empty();
+            for (var key in adress) {
+                var adre = adress[key];
+                target.append('<a onclick="Getmedia('+adre.id+',100, access_parameters)">'+adre.name+'</br></a>')
+            }
+        } else {
+            target.html("nothing found");
+        }
+    } 
+}
+
+function onDataLoaded2(instagram_data) {
+    var target = $("#result");
+
+    if (instagram_data.meta.code == 200) {
+        var medias = instagram_data.data;
+        console.log(medias);
+        if (medias.length > 0) {
+            target.empty();
+            for (var key in medias) {
+                var media = medias[key];
+                target.append('<a href="' + media.link + '"><img src="'+media.images.standard_resolution.url+'"class="img-thumbnail" style="width:300px;height:300px;"></a>')
+            }
+        } else {
+            target.html("nothing found");
+        }
+    } 
+}
+
+</script>
+</body>
+</html>
